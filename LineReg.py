@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import random
 
 
@@ -7,8 +8,8 @@ class MyLineReg():
         self,
         n_iter: int = 100,
         learning_rate=0.1,
-        metric=None, reg=None,
-        l1_coef=0, l2_coef=0,
+        metric: str = None, reg: str = None,
+        l1_coef: float = 0, l2_coef: float = 0,
         sgd_sample=None, random_state=42
     ):
         self.n_iter = n_iter
@@ -34,7 +35,7 @@ class MyLineReg():
             learning_rate={self.learning_rate}
         '''
 
-    def fit(self, X, y, verbose):
+    def fit(self, X: pd.DataFrame, y: pd.Series, verbose: bool):
         random.seed(self.random_state)
         X.insert(0, 'x0', 1)
         n = len(X.T)
@@ -104,7 +105,7 @@ class MyLineReg():
                 else:
                     print()
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame):
         X.insert(0, 'x0', 1)
         predict = X @ self.weights.T
         return predict
