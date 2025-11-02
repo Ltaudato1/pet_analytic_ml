@@ -35,14 +35,15 @@ class MyLineReg():
             learning_rate={self.learning_rate}
         '''
 
-    def fit(self, X: pd.DataFrame, y: pd.Series, verbose: bool):
+    def fit(self, X: pd.DataFrame, y: pd.Series, verbose=False):
         random.seed(self.random_state)
-        X.insert(0, 'x0', 1)
-        n = len(X.T)
-        m = len(X)
+        features = X.copy()
+        features.insert(0, 'x0', 1)
+        n = len(features.T)
+        m = len(features)
         avg = np.mean(y)
         self.weights = np.ones(n)
-        predict = X @ self.weights.T
+        predict = features @ self.weights.T
 
         for i in range(self.n_iter):
             sample_size = m
@@ -55,7 +56,7 @@ class MyLineReg():
                     sample_size = int(m * self.sgd_sample)
                 sample_rows_idx = random.sample(range(m), sample_size)
 
-            X_batch = X.values[sample_rows_idx, :]
+            X_batch = features.values[sample_rows_idx, :]
             y_batch = y.values[sample_rows_idx]
             predict_batch = X_batch @ self.weights.T
             grad = (2 / sample_size) * ((predict_batch - y_batch).T @ X_batch)
@@ -72,7 +73,7 @@ class MyLineReg():
                 lmd = self.learning_rate
 
             self.weights -= lmd * grad
-            predict = X @ self.weights.T
+            predict = features @ self.weights.T
             loss = np.average((predict - y)**2)
 
             if self.reg:
@@ -106,8 +107,9 @@ class MyLineReg():
                     print()
 
     def predict(self, X: pd.DataFrame):
-        X.insert(0, 'x0', 1)
-        predict = X @ self.weights.T
+        features = X.copy()
+        features.insert(0, 'x0', 1)
+        predict = features @ self.weights.T
         return predict
 
     def get_best_score(self):
