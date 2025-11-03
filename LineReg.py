@@ -3,6 +3,24 @@ import pandas as pd
 import random
 
 
+def calc_metric(metric: str, y: np.array, predict: np.array):
+    match metric:
+        case 'mae':
+            return np.mean(abs(y - predict))
+        case 'mse':
+            return np.mean((y - predict)**2)
+        case 'rmse':
+            return np.sqrt(np.mean((y - predict)**2))
+        case 'mape':
+            loss_abs = np.mean(abs(y - predict) / y)
+            return 100 * loss_abs
+        case 'r2':
+            avg = np.mean(y)
+            diff_avg = np.sum((y - avg)**2)
+            diff_loss = np.sum((y - predict)**2)
+            return 1 - diff_loss / diff_avg
+
+
 class MyLineReg():
     def __init__(
         self,
@@ -41,7 +59,6 @@ class MyLineReg():
         features.insert(0, 'x0', 1)
         n = len(features.T)
         m = len(features)
-        avg = np.mean(y)
         self.weights = np.ones(n)
         predict = features @ self.weights.T
 
@@ -82,29 +99,15 @@ class MyLineReg():
                 if self.reg == ('l2', 'elasticnet'):
                     loss += self.l2_coef * np.sum(self.weights**2)
 
-            if self.metric:
-                match self.metric:
-                    case 'mae':
-                        self.metric_value = np.mean(abs(y - predict))
-                    case 'mse':
-                        self.metric_value = loss
-                    case 'rmse':
-                        self.metric_value = np.sqrt(loss)
-                    case 'mape':
-                        loss_abs = np.mean(abs(y - predict) / y)
-                        self.metric_value = 100 * loss_abs
-                    case 'r2':
-                        diff_avg = np.sum((y - avg)**2)
-                        diff_loss = np.sum((y - predict)**2)
-                        self.metric_value = 1 - diff_loss / diff_avg
-
             if verbose and i % verbose == 0:
                 idx = 'start' if i == 0 else str(i)
                 print(f'{idx} | loss: {loss}', end='')
                 if self.metric:
+                    self.metric_value = calc_metric(self.metric, y, predict)
                     print(f' | {self.metric}: {self.metric_value}')
                 else:
                     print()
+        self.metric_value = calc_metric(self.metric, y, predict)
 
     def predict(self, X: pd.DataFrame):
         features = X.copy()
