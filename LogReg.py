@@ -14,12 +14,14 @@ def calc_metric(metric: str, classes: list, threshold: float):
             if classes[i][1] == 1:
                 positives += 1
                 if i > 0 and classes[i][0] == classes[i-1][0]:
-                    s_equals += 0.5
+                    s_equals += 1
                 else:
                     s_equals = 0
             else:
                 negatives += 1
-                s += positives + s_equals
+                if classes[i][0] == classes[i-1][0] and classes[i-1][1] == 1:
+                    s_equals += 1
+                s += positives + s_equals / 2
         return s / (positives * negatives)
     else:
         tp = 0
